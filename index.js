@@ -25,15 +25,46 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-
+    // await client.connect();
+    // ....menu collection........
     const menuCollection = client.db("BistroBoss").collection("menu");
+    // ...........user collection.......
+    const userCollection = client.db("BistroBoss").collection("users");
+    //
     app.get("/menu", async (req, res) => {
       const result = await menuCollection.find().toArray();
       res.send(result);
+
+      //
+      //
+      // .......user functionalities.....
+      app.post("/users", async (req, res) => {
+        const user = req.body;
+        const result = await userCollection.insertOne(user);
+        res.send(result);
+      });
+      //
+      app.get("/users", async (req, res) => {
+        const cursor = userCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      });
+
+      //
+      app.patch("/users", async (req, res) => {
+        const email = req.body.email;
+        const filter = { email };
+        const updatedUser = {
+          $set: {
+            lastSignInTime: req?.body?.lastSignInTime,
+          },
+        };
+        const result = await userCollection.updateOne(filter, updatedUser);
+        res.send(result);
+      });
     });
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
